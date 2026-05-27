@@ -23,7 +23,7 @@ export class AssignmentController {
       if (!req.file) throw new Error('Submission file is required');
       const fileUrl = `/uploads/submissions/${req.file.filename}`;
       const submission = await assignmentService.submitWork({
-        assignmentId: req.params.assignmentId!,
+        assignmentId: req.params.assignmentId as string,
         learnerId: req.user!.userId,
         fileUrl,
         content: req.body.content,
@@ -38,7 +38,7 @@ export class AssignmentController {
     try {
       const review = await assignmentService.reviewSubmission({
         ...req.body,
-        submissionId: req.params.submissionId!,
+        submissionId: req.params.submissionId as string,
         tutorId: req.user!.userId,
       });
       res.status(201).json({ success: true, data: review });
@@ -59,7 +59,7 @@ export class AssignmentController {
   async getSubmissions(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const submissions = await assignmentService.getSubmissions(
-        req.params.assignmentId!,
+        req.params.assignmentId as string,
         req.user!.userId
       );
       res.status(200).json({ success: true, data: submissions });

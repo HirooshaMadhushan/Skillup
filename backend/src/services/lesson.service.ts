@@ -47,4 +47,8 @@ export class LessonService {
 
     return this.lessonRepository.delete(id);
   }
+
+  async getAllCategories() {
+    return this.lessonRepository.findAllCategories();
+  }
 }

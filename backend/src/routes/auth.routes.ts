@@ -68,4 +68,40 @@ router.post('/register', validate(registerSchema), authController.register);
  */
 router.post('/login', validate(loginSchema), authController.login);
 
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ */
+router.post('/logout', authController.logout);
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Reset user password
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email: { type: string, format: email }
+ *               password: { type: string, minLength: 8, description: "New password" }
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *       400:
+ *         description: Reset failed
+ */
+router.post('/reset-password', authController.resetPassword);
+
 export default router;

@@ -37,6 +37,16 @@ model User {
   lessonViews        LessonView[]
   progress           UserProgress[]
 
+  availabilities  Availability[]    @relation("TutorAvailability")
+  learningPaths   LearningPath[]
+  assessments     SkillAssessment[]
+  recommendations Recommendation[]
+  userBadges      UserBadge[]
+  achievements    UserAchievement[]
+  points          UserPoints?
+  payments        Payment[]
+  subscription    Subscription?
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
@@ -71,6 +81,7 @@ model Lesson {
   assignments   Assignment[]
   views         LessonView[]
   learnerProgress UserProgress[]
+  recommendations Recommendation[]
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -302,6 +313,173 @@ model UserProgress {
   updatedAt    DateTime @updatedAt
 
   @@unique([userId, lessonId])
+}
+
+model Availability {
+  id        String   @id @default(uuid())
+  dayOfWeek Int      // 0-6 (Sunday-Saturday)
+  startTime String   // e.g. "09:00"
+  endTime   String   // e.g. "17:00"
+  tutorId   String
+  tutor     User     @relation("TutorAvailability", fields: [tutorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tutorId])
+}
+
+model LearningPath {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  lessons     Json     // Array of lesson IDs or JSON metadata
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SkillAssessment {
+  id        String   @id @default(uuid())
+  skills    Json     // Key-value pairs of skills and levels
+  score     Float
+  feedback  String?  @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Recommendation {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  reason      String?  @db.Text
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String?
+  lesson      Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Badge {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String      @db.Text
+  iconUrl     String
+  userBadges  UserBadge[]
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, badgeId])
+}
+
+model Achievement {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  description      String            @db.Text
+  criteria         String            // Criteria rule description or condition
+  userAchievements UserAchievement[]
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([userId, achievementId])
+}
+
+model UserPoints {
+  id         String   @id @default(uuid())
+  points     Int      @default(0)
+  streak     Int      @default(0)
+  lastActive DateTime @default(now())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String
+  purpose       String        // "LESSON_PURCHASE", "TUTOR_SESSION", "SUBSCRIPTION"
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId      String?
+  bookingId     String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Subscription {
+  id        String             @id @default(uuid())
+  plan      SubscriptionPlan   @default(BASIC)
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime           @default(now())
+  endDate   DateTime
+  userId    String             @unique
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PREMIUM
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
 }
 
 

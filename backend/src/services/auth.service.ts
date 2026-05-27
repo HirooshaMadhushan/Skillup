@@ -52,4 +52,13 @@ export class AuthService {
       },
     };
   }
+
+  async resetPassword(email: string, newPassword: string) {
+    const user = await this.authRepository.findUserByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return this.authRepository.updatePassword(email, hashedPassword);
+  }
 }

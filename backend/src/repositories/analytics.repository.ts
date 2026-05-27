@@ -48,9 +48,37 @@ export class AnalyticsRepository {
     return {
       totalLessons,
       completedLessons,
-      completionRate: totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0,
+      completionRate: totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100 * 100) / 100 : 0,
       totalSubmissions: submissions.length,
       reviewedSubmissions: submissions.filter(s => s.status === 'REVIEWED').length,
+    };
+  }
+
+  async getLearnerLearningStats(learnerId: string) {
+    const [points, totalBookings, totalSubmissions, totalViews, completedLessons] = await Promise.all([
+      prisma.userPoints.findUnique({ where: { userId: learnerId } }),
+      prisma.booking.count({ where: { learnerId } }),
+      prisma.submission.count({ where: { learnerId } }),
+      prisma.lessonView.count({ where: { userId: learnerId } }),
+      prisma.userProgress.count({ where: { userId: learnerId, isCompleted: true } }),
+    ]);
+
+    const badges = await prisma.userBadge.count({ where: { userId: learnerId } });
+    const achievements = await prisma.userAchievement.count({ where: { userId: learnerId } });
+
+    return {
+      gamification: {
+        totalPoints: points?.points || 0,
+        streak: points?.streak || 0,
+        badgesEarned: badges,
+        achievementsUnlocked: achievements,
+      },
+      activity: {
+        totalBookings,
+        totalSubmissions,
+        totalViews,
+        completedLessons,
+      },
     };
   }
 

@@ -36,7 +36,7 @@ export class LessonController {
 
   async getOne(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const lesson = await lessonService.getLessonById(req.params.id!);
+      const lesson = await lessonService.getLessonById(req.params.id as string);
       res.status(200).json({
         success: true,
         data: lesson,
@@ -50,7 +50,7 @@ export class LessonController {
     try {
       const contentUrl = req.file ? `/uploads/lessons/${req.file.filename}` : undefined;
       const lesson = await lessonService.updateLesson(
-        req.params.id!,
+        req.params.id as string,
         { ...req.body, contentUrl },
         req.user!.userId
       );
@@ -66,7 +66,7 @@ export class LessonController {
 
   async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await lessonService.deleteLesson(req.params.id!, req.user!.userId);
+      await lessonService.deleteLesson(req.params.id as string, req.user!.userId);
       res.status(200).json({
         success: true,
         message: 'Lesson deleted successfully',

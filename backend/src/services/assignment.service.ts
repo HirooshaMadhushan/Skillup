@@ -60,7 +60,10 @@ export class AssignmentService {
 
     return review;
   }
-  // ... rest of the service ...
+
+  async getAllAssignments(filters: any) {
+    return this.assignmentRepository.getAssignments(filters);
+  }
 
   async getAssignmentDetails(id: string) {
     return this.assignmentRepository.getAssignmentById(id);

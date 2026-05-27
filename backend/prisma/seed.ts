@@ -89,6 +89,60 @@ async function main() {
     },
   });
 
+  // 5. Seed Lesson Categories
+  console.log('Seeding Categories...');
+  const categories = [
+    { name: 'Web Development', description: 'HTML, CSS, JavaScript, React, Node.js and more' },
+    { name: 'Mobile Development', description: 'iOS, Android, Flutter, React Native development' },
+    { name: 'Data Science', description: 'Machine learning, AI, statistics, and data analysis' },
+    { name: 'UI/UX Design', description: 'User interface and experience design principles' },
+    { name: 'DevOps', description: 'CI/CD, Docker, Kubernetes, cloud services' },
+    { name: 'Cybersecurity', description: 'Network security, ethical hacking, cryptography' },
+  ];
+
+  for (const cat of categories) {
+    await prisma.lessonCategory.upsert({
+      where: { name: cat.name },
+      update: {},
+      create: cat,
+    });
+  }
+
+  // 6. Seed Badges
+  console.log('Seeding Badges...');
+  const badges = [
+    { name: 'First Lesson View', description: 'Viewed your very first lesson!', iconUrl: '/badges/first-view.png' },
+    { name: 'First Lesson Complete', description: 'Completed your first lesson!', iconUrl: '/badges/first-complete.png' },
+    { name: 'Dedicated Learner', description: 'Completed 5 lessons!', iconUrl: '/badges/dedicated.png' },
+    { name: 'Bookworm', description: 'Viewed 25 lessons!', iconUrl: '/badges/bookworm.png' },
+    { name: 'Social Learner', description: 'Booked your first tutor session!', iconUrl: '/badges/social.png' },
+  ];
+
+  for (const badge of badges) {
+    await prisma.badge.upsert({
+      where: { name: badge.name },
+      update: {},
+      create: badge,
+    });
+  }
+
+  // 7. Seed Achievements
+  console.log('Seeding Achievements...');
+  const achievements = [
+    { name: 'Curious Learner', description: 'Viewed 10 different lessons', criteria: 'VIEW_COUNT >= 10' },
+    { name: 'Knowledge Seeker', description: 'Completed 10 lessons', criteria: 'COMPLETION_COUNT >= 10' },
+    { name: 'Submission Star', description: 'Submitted 5 assignments', criteria: 'SUBMISSION_COUNT >= 5' },
+    { name: 'Perfect Score', description: 'Received an A grade on a submission', criteria: 'GRADE == A' },
+  ];
+
+  for (const achievement of achievements) {
+    await prisma.achievement.upsert({
+      where: { name: achievement.name },
+      update: {},
+      create: achievement,
+    });
+  }
+
   console.log('Seeding completed successfully.');
 }
 

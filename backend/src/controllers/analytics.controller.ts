@@ -23,6 +23,15 @@ export class AnalyticsController {
     }
   }
 
+  async getLearnerLearningStats(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const stats = await analyticsService.getLearnerLearningStats(req.user!.userId);
+      res.status(200).json({ success: true, data: stats });
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
   async getPlatformStats(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const stats = await analyticsService.getAdminAnalytics();

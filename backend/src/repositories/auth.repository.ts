@@ -58,4 +58,11 @@ export class AuthRepository {
       return this.findUserByEmail(user.email);
     });
   }
+
+  async updatePassword(email: string, hashedPassword: string) {
+    return prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
+  }
 }

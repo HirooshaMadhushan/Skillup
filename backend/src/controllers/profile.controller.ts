@@ -23,10 +23,15 @@ export class ProfileController {
       const roles = req.user!.roles;
       let updatedProfile;
 
+      const updateData = req.file ? {
+        ...req.body,
+        profileImage: `/uploads/profiles/${req.file.filename}`,
+      } : req.body;
+
       if (roles.includes('TUTOR')) {
-        updatedProfile = await profileService.updateTutorProfile(userId, req.body);
+        updatedProfile = await profileService.updateTutorProfile(userId, updateData);
       } else if (roles.includes('LEARNER')) {
-        updatedProfile = await profileService.updateLearnerProfile(userId, req.body);
+        updatedProfile = await profileService.updateLearnerProfile(userId, updateData);
       } else {
         throw new Error('No specific profile found for this role');
       }

@@ -72,4 +72,8 @@ export class LessonRepository {
   async findCategoryById(id: string) {
     return prisma.lessonCategory.findUnique({ where: { id } });
   }
+
+  async findAllCategories() {
+    return prisma.lessonCategory.findMany();
+  }
 }

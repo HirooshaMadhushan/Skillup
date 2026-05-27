@@ -82,7 +82,13 @@ export class BookingService {
 
     return updatedBooking;
   }
-  // ... rest of the service ...
+
+  async getMyBookings(userId: string, roles: string[]) {
+    if (roles.includes('TUTOR')) {
+      return this.bookingRepository.getTutorBookings(userId);
+    }
+    return this.bookingRepository.getLearnerBookings(userId);
+  }
 
   async updateBookingStatus(bookingId: string, tutorId: string, status: BookingStatus) {
     const booking = await this.bookingRepository.findById(bookingId);

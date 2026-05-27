@@ -35,9 +35,9 @@ export class BookingController {
 
   async cancelBooking(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { reason } = req.body;
-      const booking = await bookingService.cancelBooking(id!, req.user!.userId, reason);
+      const booking = await bookingService.cancelBooking(id, req.user!.userId, reason);
       res.status(200).json({
         success: true,
         message: 'Booking cancelled successfully',
@@ -50,9 +50,9 @@ export class BookingController {
 
   async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { status } = req.body;
-      const booking = await bookingService.updateBookingStatus(id!, req.user!.userId, status);
+      const booking = await bookingService.updateBookingStatus(id, req.user!.userId, status);
       res.status(200).json({
         success: true,
         message: `Booking status updated to ${status}`,

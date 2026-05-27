@@ -35,4 +35,34 @@ export class AuthController {
       });
     }
   }
+
+  async logout(req: Request, res: Response, next: NextFunction) {
+    try {
+      res.status(200).json({
+        success: true,
+        message: 'Logout successful',
+      });
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        throw new Error('Email and new password are required');
+      }
+      await authService.resetPassword(email, password);
+      res.status(200).json({
+        success: true,
+        message: 'Password reset successful',
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 }

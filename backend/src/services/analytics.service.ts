@@ -15,6 +15,10 @@ export class AnalyticsService {
     return this.analyticsRepository.getLearnerProgress(learnerId);
   }
 
+  async getLearnerLearningStats(learnerId: string) {
+    return this.analyticsRepository.getLearnerLearningStats(learnerId);
+  }
+
   async getAdminAnalytics() {
     return this.analyticsRepository.getPlatformStats();
   }

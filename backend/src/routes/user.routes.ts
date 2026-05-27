@@ -1,51 +1,59 @@
 import { Router } from 'express';
-import { authenticate, authorizeRoles } from '../middlewares/auth.middleware';
+import { ProfileController } from '../controllers/profile.controller';
+import { authenticate } from '../middlewares/auth.middleware';
+import { profileUpload } from '../middlewares/upload.middleware';
 
 const router = Router();
+const profileController = new ProfileController();
 
 /**
- * @example Protected Route
- * Accessible by any authenticated user (Learner, Tutor, or Admin)
+ * @swagger
+ * /api/users/profile:
+ *   get:
+ *     summary: Get logged-in user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data: { $ref: '#/components/schemas/User' }
+ *       401:
+ *         description: Unauthorized
  */
-router.get('/profile', authenticate, (req, res) => {
-  res.json({
-    success: true,
-    message: 'User profile data',
-    user: (req as any).user, // Using AuthRequest for typing in real implementation
-  });
-});
+router.get('/profile', authenticate, profileController.getMyProfile);
 
 /**
- * @example Tutor-Only Route
- * Accessible only by users with the TUTOR role
+ * @swagger
+ * /api/users/profile:
+ *   put:
+ *     summary: Update logged-in user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName: { type: string }
+ *               bio: { type: string }
+ *               interests: { type: string, description: "Learner only" }
+ *               learningGoals: { type: string, description: "Learner only" }
+ *               profileImage: { type: string, format: binary }
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Unauthorized
  */
-router.get('/tutor/dashboard', authenticate, authorizeRoles(['TUTOR']), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Welcome to the Tutor Dashboard',
-  });
-});
-
-/**
- * @example Admin-Only Route
- * Accessible only by users with the ADMIN role
- */
-router.get('/admin/users', authenticate, authorizeRoles(['ADMIN']), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Admin: List of all users',
-  });
-});
-
-/**
- * @example Multi-Role Route
- * Accessible by either Tutor or Admin
- */
-router.get('/reports', authenticate, authorizeRoles(['TUTOR', 'ADMIN']), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Management reports',
-  });
-});
+router.put('/profile', authenticate, profileUpload.single('profileImage'), profileController.updateMyProfile);
 
 export default router;
