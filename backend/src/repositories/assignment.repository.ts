@@ -60,4 +60,25 @@ export class AssignmentRepository {
       include: { assignment: true, review: true },
     });
   }
+
+  async updateAssignment(id: string, data: any) {
+    return prisma.assignment.update({
+      where: { id },
+      data,
+      include: { tutor: { select: { fullName: true } } },
+    });
+  }
+
+  async deleteAssignment(id: string) {
+    return prisma.assignment.delete({
+      where: { id },
+    });
+  }
+
+  async findUserById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
+      include: { userRoles: { include: { role: true } } }
+    });
+  }
 }

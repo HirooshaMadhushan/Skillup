@@ -76,4 +76,32 @@ export class AssignmentService {
 
     return this.assignmentRepository.getSubmissionsByAssignment(assignmentId);
   }
+
+  async updateAssignment(id: string, data: any, userId: string) {
+    const assignment = await this.assignmentRepository.getAssignmentById(id);
+    if (!assignment) throw new Error('Assignment not found');
+
+    const user = await this.assignmentRepository.findUserById(userId);
+    const isAdmin = user?.userRoles.some(ur => ur.role.name === 'ADMIN');
+
+    if (assignment.tutorId !== userId && !isAdmin) {
+      throw new Error('Unauthorized to update this assignment');
+    }
+
+    return this.assignmentRepository.updateAssignment(id, data);
+  }
+
+  async deleteAssignment(id: string, userId: string) {
+    const assignment = await this.assignmentRepository.getAssignmentById(id);
+    if (!assignment) throw new Error('Assignment not found');
+
+    const user = await this.assignmentRepository.findUserById(userId);
+    const isAdmin = user?.userRoles.some(ur => ur.role.name === 'ADMIN');
+
+    if (assignment.tutorId !== userId && !isAdmin) {
+      throw new Error('Unauthorized to delete this assignment');
+    }
+
+    return this.assignmentRepository.deleteAssignment(id);
+  }
 }
