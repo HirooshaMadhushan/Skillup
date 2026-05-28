@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { ProfileController } from '../controllers/profile.controller';
-import { authenticate, authorizeRoles } from '../middlewares/auth.middleware';
-import { validate } from '../middlewares/validation.middleware';
-import { updateLearnerProfileSchema, updateTutorProfileSchema } from '../utils/profile.validation';
+import { authenticate } from '../middlewares/auth.middleware';
+import { profileUpload } from '../middlewares/upload.middleware';
 
 const router = Router();
 const profileController = new ProfileController();
@@ -47,7 +46,7 @@ router.get('/me', authenticate, profileController.getMyProfile);
  *       200:
  *         description: Profile updated successfully
  */
-router.patch('/me', authenticate, profileController.updateMyProfile);
+router.patch('/me', authenticate, profileUpload.single('profileImage'), profileController.updateMyProfile);
 
 /**
  * @swagger

@@ -14,9 +14,12 @@ export const updateTutorProfileSchema = z.object({
   profileImage: z.string().optional(),
   expertise: z.string().optional(),
   qualification: z.string().optional(),
-  experience: z.number().min(0).optional(),
-  hourlyRate: z.number().min(0).optional(),
-  isAvailable: z.boolean().optional(),
+  experience: z.preprocess((val) => (typeof val === 'string' ? parseInt(val, 10) : val), z.number().min(0).optional()),
+  hourlyRate: z.preprocess((val) => (typeof val === 'string' ? parseFloat(val) : val), z.number().min(0).optional()),
+  isAvailable: z.preprocess((val) => {
+    if (typeof val === 'string') return val.toLowerCase() === 'true';
+    return val;
+  }, z.boolean().optional()),
 });
 
 export type UpdateLearnerInput = z.infer<typeof updateLearnerProfileSchema>;
