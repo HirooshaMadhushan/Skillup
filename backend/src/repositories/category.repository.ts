@@ -20,4 +20,10 @@ export class CategoryRepository {
       },
     });
   }
+
+  async create(data: { name: string; description?: string }) {
+    return prisma.lessonCategory.create({
+      data,
+    });
+  }
 }

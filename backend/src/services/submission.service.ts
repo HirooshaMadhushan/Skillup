@@ -16,6 +16,9 @@ export class SubmissionService {
     if (!submission) throw new Error('Submission not found');
     if (submission.learnerId !== learnerId) throw new Error('Unauthorized');
     if (!submission.review) throw new Error('No review available yet');
-    return submission.review;
+    return {
+      ...submission.review,
+      score: submission.review.grade,
+    };
   }
 }

@@ -1,5 +1,8 @@
 import { Router } from 'express';
 import { CategoryController } from '../controllers/category.controller';
+import { authenticate, authorizeRoles } from '../middlewares/auth.middleware';
+import { validate } from '../middlewares/validation.middleware';
+import { createCategorySchema } from '../utils/category.validation';
 
 const router = Router();
 const categoryController = new CategoryController();
@@ -24,6 +27,31 @@ const categoryController = new CategoryController();
  *                   items: { $ref: '#/components/schemas/Category' }
  */
 router.get('/', categoryController.getAll);
+
+/**
+ * @swagger
+ * /api/categories:
+ *   post:
+ *     summary: Create a new category
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               description: { type: string }
+ *     responses:
+ *       201:
+ *         description: Category created
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/', authenticate, authorizeRoles('TUTOR', 'ADMIN'), validate(createCategorySchema), categoryController.create);
 
 /**
  * @swagger

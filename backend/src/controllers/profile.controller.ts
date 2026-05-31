@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { ProfileService } from '../services/profile.service';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import { updateLearnerProfileSchema, updateTutorProfileSchema } from '../utils/profile.validation';
 
 const profileService = new ProfileService();
 
@@ -23,15 +24,17 @@ export class ProfileController {
       const roles = req.user!.roles;
       let updatedProfile;
 
-      const updateData = req.file ? {
+      const rawData = req.file ? {
         ...req.body,
         profileImage: `/uploads/profiles/${req.file.filename}`,
       } : req.body;
 
       if (roles.includes('TUTOR')) {
-        updatedProfile = await profileService.updateTutorProfile(userId, updateData);
+        const validatedData = await updateTutorProfileSchema.parseAsync(rawData);
+        updatedProfile = await profileService.updateTutorProfile(userId, validatedData);
       } else if (roles.includes('LEARNER')) {
-        updatedProfile = await profileService.updateLearnerProfile(userId, updateData);
+        const validatedData = await updateLearnerProfileSchema.parseAsync(rawData);
+        updatedProfile = await profileService.updateLearnerProfile(userId, validatedData);
       } else {
         throw new Error('No specific profile found for this role');
       }

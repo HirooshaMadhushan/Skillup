@@ -39,3 +39,21 @@ export const authorizeRoles = (roles: string[]) => {
     next();
   };
 };
+
+export const optionalAuthenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = verifyAccessToken(token) as any;
+    req.user = decoded;
+    next();
+  } catch (error) {
+    // If token is invalid, just proceed without user (optional)
+    next();
+  }
+};

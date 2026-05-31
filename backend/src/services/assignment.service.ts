@@ -40,7 +40,7 @@ export class AssignmentService {
     return submission;
   }
 
-  async reviewSubmission(data: { submissionId: string; tutorId: string; feedback: string; grade?: string }) {
+  async reviewSubmission(data: { submissionId: string; tutorId: string; feedback: string; grade?: string; score?: number }) {
     const submission = await this.assignmentRepository.getSubmissionById(data.submissionId);
     if (!submission) throw new Error('Submission not found');
 
@@ -48,7 +48,14 @@ export class AssignmentService {
       throw new Error('Unauthorized: You are not the tutor of this assignment');
     }
 
-    const review = await this.assignmentRepository.createReview(data);
+    const normalizedReview = {
+      submissionId: data.submissionId,
+      tutorId: data.tutorId,
+      feedback: data.feedback,
+      grade: data.grade ?? (data.score !== undefined ? String(data.score) : undefined),
+    };
+
+    const review = await this.assignmentRepository.createReview(normalizedReview);
 
     // Notify Learner
     await notificationService.createNotification({
@@ -58,7 +65,10 @@ export class AssignmentService {
       type: 'SUBMISSION_REVIEWED',
     });
 
-    return review;
+    return {
+      ...review,
+      score: review.grade,
+    };
   }
 
   async getAllAssignments(filters: any) {
@@ -75,5 +85,33 @@ export class AssignmentService {
     if (assignment.tutorId !== tutorId) throw new Error('Unauthorized');
 
     return this.assignmentRepository.getSubmissionsByAssignment(assignmentId);
+  }
+
+  async updateAssignment(id: string, data: any, userId: string) {
+    const assignment = await this.assignmentRepository.getAssignmentById(id);
+    if (!assignment) throw new Error('Assignment not found');
+
+    const user = await this.assignmentRepository.findUserById(userId);
+    const isAdmin = user?.userRoles.some(ur => ur.role.name === 'ADMIN');
+
+    if (assignment.tutorId !== userId && !isAdmin) {
+      throw new Error('Unauthorized to update this assignment');
+    }
+
+    return this.assignmentRepository.updateAssignment(id, data);
+  }
+
+  async deleteAssignment(id: string, userId: string) {
+    const assignment = await this.assignmentRepository.getAssignmentById(id);
+    if (!assignment) throw new Error('Assignment not found');
+
+    const user = await this.assignmentRepository.findUserById(userId);
+    const isAdmin = user?.userRoles.some(ur => ur.role.name === 'ADMIN');
+
+    if (assignment.tutorId !== userId && !isAdmin) {
+      throw new Error('Unauthorized to delete this assignment');
+    }
+
+    return this.assignmentRepository.deleteAssignment(id);
   }
 }

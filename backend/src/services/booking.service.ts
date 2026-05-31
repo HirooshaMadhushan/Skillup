@@ -51,7 +51,7 @@ export class BookingService {
       userId: data.tutorId,
       title: 'New Booking',
       message: `You have a new booking request for ${start.toLocaleString()}`,
-      type: 'BOOKING_CREATED',
+      type: NotificationType.BOOKING_CREATED,
     });
 
     return booking;
@@ -77,7 +77,7 @@ export class BookingService {
       userId: notifyUserId,
       title: 'Booking Cancelled',
       message: `Booking for ${booking.startTime.toLocaleString()} has been cancelled. Reason: ${reason}`,
-      type: 'BOOKING_CANCELLED',
+      type: NotificationType.BOOKING_CANCELLED,
     });
 
     return updatedBooking;
@@ -90,7 +90,7 @@ export class BookingService {
     return this.bookingRepository.getLearnerBookings(userId);
   }
 
-  async updateBookingStatus(bookingId: string, tutorId: string, status: BookingStatus) {
+  async updateBookingStatus(bookingId: string, tutorId: string, status: BookingStatus, cancellationReason?: string) {
     const booking = await this.bookingRepository.findById(bookingId);
     if (!booking) throw new Error('Booking not found');
 
@@ -98,6 +98,6 @@ export class BookingService {
       throw new Error('Only the tutor can update the booking status');
     }
 
-    return this.bookingRepository.updateStatus(bookingId, status);
+    return this.bookingRepository.updateStatus(bookingId, status, cancellationReason);
   }
 }

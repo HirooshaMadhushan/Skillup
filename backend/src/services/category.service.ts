@@ -16,4 +16,13 @@ export class CategoryService {
     if (!category) throw new Error('Category not found');
     return category;
   }
+
+  async createCategory(data: { name: string; description?: string }) {
+    // Check if category name already exists
+    const existing = await this.categoryRepository.findAll();
+    if (existing.some(c => c.name.toLowerCase() === data.name.toLowerCase())) {
+      throw new Error('Category with this name already exists');
+    }
+    return this.categoryRepository.create(data);
+  }
 }

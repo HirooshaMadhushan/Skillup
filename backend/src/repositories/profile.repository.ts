@@ -17,16 +17,26 @@ export class ProfileRepository {
     const { fullName, bio, profileImage, ...profileData } = data;
     
     return prisma.$transaction(async (tx) => {
-      // Update User fields
-      await tx.user.update({
-        where: { id: userId },
-        data: { fullName, bio, profileImage },
-      });
+      // Update User fields if any are provided
+      if (fullName !== undefined || bio !== undefined || profileImage !== undefined) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { fullName, bio, profileImage },
+        });
+      }
 
-      // Update LearnerProfile fields
-      return tx.learnerProfile.update({
+      // Update LearnerProfile fields if any are provided
+      if (Object.keys(profileData).length > 0) {
+        return tx.learnerProfile.update({
+          where: { userId },
+          data: profileData,
+          include: { user: true },
+        });
+      }
+
+      // If no profile fields, just return the profile with user data
+      return tx.learnerProfile.findUnique({
         where: { userId },
-        data: profileData,
         include: { user: true },
       });
     });
@@ -36,16 +46,26 @@ export class ProfileRepository {
     const { fullName, bio, profileImage, ...profileData } = data;
 
     return prisma.$transaction(async (tx) => {
-      // Update User fields
-      await tx.user.update({
-        where: { id: userId },
-        data: { fullName, bio, profileImage },
-      });
+      // Update User fields if any are provided
+      if (fullName !== undefined || bio !== undefined || profileImage !== undefined) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { fullName, bio, profileImage },
+        });
+      }
 
-      // Update TutorProfile fields
-      return tx.tutorProfile.update({
+      // Update TutorProfile fields if any are provided
+      if (Object.keys(profileData).length > 0) {
+        return tx.tutorProfile.update({
+          where: { userId },
+          data: profileData,
+          include: { user: true },
+        });
+      }
+
+      // If no profile fields, just return the profile with user data
+      return tx.tutorProfile.findUnique({
         where: { userId },
-        data: profileData,
         include: { user: true },
       });
     });

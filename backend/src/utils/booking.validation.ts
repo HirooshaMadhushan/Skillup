@@ -12,5 +12,9 @@ export const updateBookingStatusSchema = z.object({
   cancellationReason: z.string().optional(),
 });
 
+export const cancelBookingSchema = z.object({
+  cancellationReason: z.string().optional(),
+});
+
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 export type UpdateBookingStatusInput = z.infer<typeof updateBookingStatusSchema>;

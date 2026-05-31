@@ -21,4 +21,13 @@ export class CategoryController {
       next(error);
     }
   }
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const category = await categoryService.createCategory(req.body);
+      res.status(201).json({ success: true, data: category });
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

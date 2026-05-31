@@ -6,8 +6,11 @@ export const createLessonSchema = z.object({
   categoryId: z.string().uuid(),
   difficulty: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']).default('BEGINNER'),
   contentType: z.enum(['VIDEO', 'PDF', 'TEXT']).default('TEXT'),
-  isPremium: z.string().transform(v => v === 'true').optional(), // Multi-part sends as string
-  tags: z.string().optional(), // Tags as comma-separated string for multi-part
+  isPremium: z.preprocess((val) => {
+    if (typeof val === 'string') return val.toLowerCase() === 'true';
+    return val;
+  }, z.boolean().optional()),
+  tags: z.string().optional(),
 });
 
 export const updateLessonSchema = createLessonSchema.partial();

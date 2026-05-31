@@ -1,9 +1,7 @@
 import { Router } from 'express';
 import { LessonController } from '../controllers/lesson.controller';
-import { authenticate, authorizeRoles } from '../middlewares/auth.middleware';
+import { authenticate, authorizeRoles, optionalAuthenticate } from '../middlewares/auth.middleware';
 import { lessonUpload } from '../middlewares/upload.middleware';
-import { validate } from '../middlewares/validation.middleware';
-import { createLessonSchema, updateLessonSchema } from '../utils/lesson.validation';
 
 const router = Router();
 const lessonController = new LessonController();
@@ -47,7 +45,6 @@ router.post(
   authenticate,
   authorizeRoles(['TUTOR', 'ADMIN']),
   lessonUpload.single('file'),
-  validate(createLessonSchema),
   lessonController.create
 );
 
@@ -80,7 +77,7 @@ router.post(
  *                   type: array
  *                   items: { $ref: '#/components/schemas/Lesson' }
  */
-router.get('/', lessonController.getAll);
+router.get('/', optionalAuthenticate, lessonController.getAll);
 
 /**
  * @swagger
@@ -106,7 +103,7 @@ router.get('/', lessonController.getAll);
  *       404:
  *         description: Lesson not found
  */
-router.get('/:id', lessonController.getOne);
+router.get('/:id', optionalAuthenticate, lessonController.getOne);
 
 /**
  * @swagger
@@ -116,13 +113,41 @@ router.get('/:id', lessonController.getOne);
  *     tags: [Lessons]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *               categoryId: { type: string, format: uuid }
+ *               difficulty: { type: string, enum: [BEGINNER, INTERMEDIATE, ADVANCED] }
+ *               contentType: { type: string, enum: [VIDEO, PDF, TEXT] }
+ *               isPremium: { type: boolean }
+ *               tags: { type: string, description: "Comma-separated tags" }
+ *               file: { type: string, format: binary }
+ *     responses:
+ *       200:
+ *         description: Lesson updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data: { $ref: '#/components/schemas/Lesson' }
  */
 router.patch(
   '/:id',
   authenticate,
   authorizeRoles(['TUTOR', 'ADMIN']),
   lessonUpload.single('file'),
-  validate(updateLessonSchema),
   lessonController.update
 );
 
@@ -134,6 +159,16 @@ router.patch(
  *     tags: [Lessons]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Lesson deleted successfully
+ *       404:
+ *         description: Lesson not found
  */
 router.delete(
   '/:id',

@@ -2,8 +2,6 @@ import { Router } from 'express';
 import { AssignmentController } from '../controllers/assignment.controller';
 import { authenticate, authorizeRoles } from '../middlewares/auth.middleware';
 import { assignmentUpload, submissionUpload } from '../middlewares/upload.middleware';
-import { validate } from '../middlewares/validation.middleware';
-import { createAssignmentSchema, reviewSubmissionSchema } from '../utils/assignment.validation';
 
 const router = Router();
 const assignmentController = new AssignmentController();
@@ -16,13 +14,27 @@ const assignmentController = new AssignmentController();
  *     tags: [Assignments]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [title, description]
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *               lessonId: { type: string, format: uuid }
+ *               dueDate: { type: string, format: date-time }
+ *               assignment: { type: string, format: binary }
+ *     responses:
+ *       201:
+ *         description: Assignment created
  */
 router.post(
   '/',
   authenticate,
   authorizeRoles(['TUTOR', 'ADMIN']),
   assignmentUpload.single('assignment'),
-  validate(createAssignmentSchema),
   assignmentController.createAssignment
 );
 
@@ -34,6 +46,80 @@ router.post(
  *     tags: [Assignments]
  */
 router.get('/', assignmentController.getAssignments);
+
+/**
+ * @swagger
+ * /api/assignments/{id}:
+ *   get:
+ *     summary: Get assignment by ID
+ *     tags: [Assignments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ */
+router.get('/:id', assignmentController.getOne);
+
+/**
+ * @swagger
+ * /api/assignments/{id}:
+ *   patch:
+ *     summary: Update an assignment (Tutor only)
+ *     tags: [Assignments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *               lessonId: { type: string, format: uuid }
+ *               dueDate: { type: string, format: date-time }
+ *               assignment: { type: string, format: binary }
+ *     responses:
+ *       200:
+ *         description: Assignment updated
+ */
+router.patch(
+  '/:id',
+  authenticate,
+  authorizeRoles(['TUTOR', 'ADMIN']),
+  assignmentUpload.single('assignment'),
+  assignmentController.updateAssignment
+);
+
+/**
+ * @swagger
+ * /api/assignments/{id}:
+ *   delete:
+ *     summary: Delete an assignment (Tutor only)
+ *     tags: [Assignments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Assignment deleted
+ */
+router.delete(
+  '/:id',
+  authenticate,
+  authorizeRoles(['TUTOR', 'ADMIN']),
+  assignmentController.deleteAssignment
+);
 
 /**
  * @swagger
@@ -81,7 +167,6 @@ router.post(
   '/submissions/:submissionId/review',
   authenticate,
   authorizeRoles(['TUTOR', 'ADMIN']),
-  validate(reviewSubmissionSchema),
   assignmentController.reviewSubmission
 );
 
