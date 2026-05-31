@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AssignmentService } from '../services/assignment.service';
 import { AuthRequest } from '../middlewares/auth.middleware';
-import { createAssignmentSchema, updateAssignmentSchema } from '../utils/assignment.validation';
+import { createAssignmentSchema, reviewSubmissionSchema, updateAssignmentSchema } from '../utils/assignment.validation';
 
 const assignmentService = new AssignmentService();
 
@@ -74,8 +74,9 @@ export class AssignmentController {
 
   async reviewSubmission(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const validatedData = await reviewSubmissionSchema.parseAsync(req.body);
       const review = await assignmentService.reviewSubmission({
-        ...req.body,
+        ...validatedData,
         submissionId: req.params.submissionId as string,
         tutorId: req.user!.userId,
       });

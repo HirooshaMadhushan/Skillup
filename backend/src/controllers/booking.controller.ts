@@ -51,8 +51,8 @@ export class BookingController {
   async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const { status } = req.body;
-      const booking = await bookingService.updateBookingStatus(id, req.user!.userId, status);
+      const { status, cancellationReason } = req.body;
+      const booking = await bookingService.updateBookingStatus(id, req.user!.userId, status, cancellationReason);
       res.status(200).json({
         success: true,
         message: `Booking status updated to ${status}`,

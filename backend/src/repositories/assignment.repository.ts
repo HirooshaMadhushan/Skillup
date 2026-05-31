@@ -45,7 +45,21 @@ export class AssignmentRepository {
 
   async createReview(data: any) {
     return prisma.$transaction(async (tx) => {
-      const review = await tx.review.create({ data });
+      const review = await tx.review.upsert({
+        where: { submissionId: data.submissionId },
+        create: {
+          submissionId: data.submissionId,
+          tutorId: data.tutorId,
+          feedback: data.feedback,
+          grade: data.grade,
+        },
+        update: {
+          tutorId: data.tutorId,
+          feedback: data.feedback,
+          grade: data.grade,
+          reviewedAt: new Date(),
+        },
+      });
       await tx.submission.update({
         where: { id: data.submissionId },
         data: { status: 'REVIEWED' },

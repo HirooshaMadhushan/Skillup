@@ -19,4 +19,8 @@ export const submitAssignmentSchema = z.object({
 export const reviewSubmissionSchema = z.object({
   feedback: z.string().min(5),
   grade: z.string().optional(),
+  score: z.coerce.number().min(0).max(100).optional(),
+}).refine((data) => data.grade !== undefined || data.score !== undefined, {
+  message: 'Either grade or score is required',
+  path: ['grade'],
 });

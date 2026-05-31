@@ -40,7 +40,7 @@ export class AssignmentService {
     return submission;
   }
 
-  async reviewSubmission(data: { submissionId: string; tutorId: string; feedback: string; grade?: string }) {
+  async reviewSubmission(data: { submissionId: string; tutorId: string; feedback: string; grade?: string; score?: number }) {
     const submission = await this.assignmentRepository.getSubmissionById(data.submissionId);
     if (!submission) throw new Error('Submission not found');
 
@@ -48,7 +48,14 @@ export class AssignmentService {
       throw new Error('Unauthorized: You are not the tutor of this assignment');
     }
 
-    const review = await this.assignmentRepository.createReview(data);
+    const normalizedReview = {
+      submissionId: data.submissionId,
+      tutorId: data.tutorId,
+      feedback: data.feedback,
+      grade: data.grade ?? (data.score !== undefined ? String(data.score) : undefined),
+    };
+
+    const review = await this.assignmentRepository.createReview(normalizedReview);
 
     // Notify Learner
     await notificationService.createNotification({
@@ -58,7 +65,10 @@ export class AssignmentService {
       type: 'SUBMISSION_REVIEWED',
     });
 
-    return review;
+    return {
+      ...review,
+      score: review.grade,
+    };
   }
 
   async getAllAssignments(filters: any) {

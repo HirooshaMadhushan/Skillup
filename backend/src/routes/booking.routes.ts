@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { BookingController } from '../controllers/booking.controller';
 import { authenticate, authorizeRoles } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validation.middleware';
-import { createBookingSchema, updateBookingStatusSchema } from '../utils/booking.validation';
+import { createBookingSchema, updateBookingStatusSchema, cancelBookingSchema } from '../utils/booking.validation';
 
 const router = Router();
 const bookingController = new BookingController();
@@ -15,6 +15,21 @@ const bookingController = new BookingController();
  *     tags: [Bookings]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [tutorId, startTime, endTime]
+ *             properties:
+ *               tutorId: { type: string, format: uuid }
+ *               startTime: { type: string, format: date-time }
+ *               endTime: { type: string, format: date-time }
+ *               notes: { type: string }
+ *     responses:
+ *       201:
+ *         description: Booking created
  */
 router.post(
   '/',
@@ -43,8 +58,24 @@ router.get('/me', authenticate, bookingController.getMyBookings);
  *     tags: [Bookings]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cancellationReason: { type: string }
+ *     responses:
+ *       200:
+ *         description: Booking cancelled
  */
-router.post('/:id/cancel', authenticate, bookingController.cancelBooking);
+router.post('/:id/cancel', authenticate, validate(cancelBookingSchema), bookingController.cancelBooking);
 
 /**
  * @swagger
@@ -54,6 +85,24 @@ router.post('/:id/cancel', authenticate, bookingController.cancelBooking);
  *     tags: [Bookings]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status: { type: string, enum: [SCHEDULED, COMPLETED, CANCELLED, NO_SHOW] }
+ *               cancellationReason: { type: string }
+ *     responses:
+ *       200:
+ *         description: Booking status updated
  */
 router.patch(
   '/:id/status',

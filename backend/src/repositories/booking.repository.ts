@@ -29,23 +29,14 @@ export class BookingRepository {
   }
 
   async findOverlappingBookings(tutorId: string, startTime: Date, endTime: Date) {
+    // Overlap condition: existing.startTime < newEnd && existing.endTime > newStart
     return prisma.booking.findMany({
       where: {
         tutorId,
         status: 'SCHEDULED',
-        OR: [
-          {
-            AND: [
-              { startTime: { lte: startTime } },
-              { endTime: { gt: startTime } },
-            ],
-          },
-          {
-            AND: [
-              { startTime: { lt: endTime } },
-              { endTime: { gte: endTime } },
-            ],
-          },
+        AND: [
+          { startTime: { lt: endTime } },
+          { endTime: { gt: startTime } },
         ],
       },
     });
